@@ -1,7 +1,8 @@
-import MessageAttachment, {
+// Supports prompt, sampler, negative prompt, batch size, steps, height, width, seed
+
+import {
   SlashCommandBuilder,
   AttachmentBuilder,
-  EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
@@ -82,7 +83,6 @@ async function execute(interaction) {
     let height = interaction.options.getNumber("height") || 512;
     let width = interaction.options.getNumber("width") || 512;
     let seed = interaction.options.getNumber("seed") || -1;
-
     // Construct the payload to send to the API
     let payload = {
       prompt: prompt,
@@ -124,7 +124,7 @@ async function execute(interaction) {
       }
 
       // Create fields to add into embed
-      const embed = createEmbedFromResponse(data);
+      const embed = createEmbedFromResponse(data, "txt2img");
 
       // Store embed incase used later
       const embedDataKey = `get_image_generation_data:${interaction.id}`; // Use interaction ID as a unique identifier
@@ -149,9 +149,8 @@ async function execute(interaction) {
       return true;
     }
   } catch (error) {
-    console.error(error);
-
     // Image response/generation error
+    console.error(error);
     await interaction.editReply({
       content:
         "Something went wrong while generating the image. Please try again later.",

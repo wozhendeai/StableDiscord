@@ -1,4 +1,44 @@
 import { EmbedBuilder } from "discord.js";
+import axios from "axios";
+
+// Ensure a valid url. Use queryCheck=false when sanitizing image urls.
+// TODO: Proper error handling
+export function sanitizeUrl(url, queryCheck = true) {
+  try {
+    // Try adding https:// to the beginning of the URL if it doesn't have a protocol
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = "https://" + url;
+    }
+
+    // Parse the URL to get the domain name and top-level domain
+    const parsedUrl = new URL(url);
+    const { hostname, pathname, search } = parsedUrl;
+
+    // Validate the URL using regex
+    const urlRegex =
+      /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g;
+    if (!urlRegex.test(parsedUrl.origin)) {
+      return;
+    }
+
+    const [domain, tld] = hostname.split(".").slice(-2);
+
+    if (!domain || !tld) {
+      return;
+    }
+
+    // Ensure that there is no query parameters in the given URL
+    if (queryCheck)
+      if (pathname !== "/" || search !== "") {
+        return;
+      }
+
+    // Construct and return the sanitized URL
+    return parsedUrl.toString();
+  } catch (error) {
+    return;
+  }
+}
 
 // Prevents string from going over maxLength characters
 export function truncate(str, maxLength) {
@@ -47,17 +87,35 @@ function extractFields(info) {
   return fields;
 }
 
-export function createEmbedFromResponse(data) {
+// Create embed from a response
+export function createEmbedFromResponse(data, title) {
   // Extract fields
   const info = JSON.parse(data.info);
   const fields = extractFields(info);
-  
+
   // Create embed
   const embed = new EmbedBuilder()
     .setColor(0x0099ff)
-    .setTitle("txt2img")
+    .setTitle(title)
     .addFields(fields)
     .setTimestamp();
 
   return embed;
+}
+
+// Get base64 encoding from a url
+export async function getBase64EncodedImageData(url) {
+  try {
+    const response = await axios.get(url, {
+      responseType: "arraybuffer",
+    });
+
+    const buffer = Buffer.from(response.data, "binary");
+    const base64EncodedData = buffer.toString("base64");
+
+    return base64EncodedData;
+  } catch (error) {
+    console.error("Error fetching image:", error);
+    return null;
+  }
 }
