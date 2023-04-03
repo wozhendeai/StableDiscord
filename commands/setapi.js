@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
-import { setApiUrl, sanitizeUrl } from "../globals.js";
+import { setApiUrl } from "../globals.js";
+import { sanitizeUrl } from "../utils.js";
 
 const data = new SlashCommandBuilder()
   .setName("setapi")

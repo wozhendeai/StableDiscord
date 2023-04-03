@@ -1,4 +1,4 @@
-// Require the necessary discord.js classes
+// Imports
 import { readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -6,24 +6,20 @@ import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
 import * as dotenv from "dotenv";
 import { getEmbedData, deleteEmbedData } from "./globals.js";
 
+// Configuration
 dotenv.config();
-
 const token = process.env.TOKEN;
-const storeImageLengthMS = process.env.STORE_IMAGE_DATA_MIN * 60_000; // STORE_IMAGE_DATA_MIN is in minutes, convert to MS
+const storeImageLengthMS = process.env.STORE_IMAGE_DATA_MIN * 60_000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Create a new client instance
+// Initialize client
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-
-// Client commands accessor
 client.commands = new Collection();
 
-// Dynamically load commands
+// Load commands
 const commandsPath = join(__dirname, "commands");
-const commandFiles = readdirSync(commandsPath).filter((file) =>
-  file.endsWith(".js")
-);
+const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith(".js"));
 
 for (const file of commandFiles) {
   const filePath = join("file:///", commandsPath, file).replace(/\\/g, "/");
@@ -58,7 +54,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       // If txt2img and executed successfully, we will delete the img data after the set time.
       if (success && interaction.commandName === "txt2img") {
-		console.log("set to delete in..")
         setTimeout(() => {
           deleteEmbedData("get_image_generation_data:" + interaction.id);
         }, storeImageLengthMS);
