@@ -22,15 +22,13 @@
 1. Clone this repo
 2. npm install
 3. Create a .env file with the following parameters
-```
 |Variable name|Type|Information|
 |TOKEN|string|discord auth token|
 |CLIENT_ID|string|discord bot client id|
 |GUILD_ID|string|discord server guild id|
 |STORE_IMAGE_DATA_MIN|number (minutes)|how long you want to store image data in memory|
-```
 [If you don't know what to put here, click this](https://discordjs.guide/creating-your-bot/)
-3. npm start
+4. npm start
 
 # Notes
 - Image generation data is removed from memory after a set amount of time. 
