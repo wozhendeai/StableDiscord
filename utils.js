@@ -1,3 +1,5 @@
+import { readdirSync } from "fs";
+import { join } from 'node:path';
 import { EmbedBuilder } from "discord.js";
 import axios from "axios";
 
@@ -118,4 +120,20 @@ export async function getBase64EncodedImageData(url) {
     console.error("Error fetching image:", error);
     return null;
   }
+}
+
+// Get array of file paths from a directory
+export function getFiles(directory, extension) {
+  let files = [];
+  const items = readdirSync(directory, { withFileTypes: true });
+
+  for (const item of items) {
+    if (item.isDirectory()) {
+      files = files.concat(getFiles(join(directory, item.name), extension));
+    } else if (item.isFile() && item.name.endsWith(extension)) {
+      files.push(join(directory, item.name));
+    }
+  }
+
+  return files;
 }
