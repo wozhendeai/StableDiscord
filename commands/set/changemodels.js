@@ -29,8 +29,6 @@ async function execute(interaction) {
       "sd_model_checkpoint": modelname
     };
 
-    console.log(JSON.stringify(payload))
-
     // Send the payload to the API
     await fetch(getApiUrl() + endpoint, {
       method: "POST",
@@ -41,7 +39,7 @@ async function execute(interaction) {
     });
 
     // Send the model names as a reply in the Discord interaction
-    await interaction.editReply(`Changing the model now to ${modelname}. This may take some time.`);
+    await interaction.editReply(`Changed the model to "${modelname}"`);
   } catch (error) {
     console.error(error);
     await interaction.editReply(

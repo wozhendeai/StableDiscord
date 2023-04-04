@@ -1,7 +1,75 @@
 import { readdirSync } from "fs";
-import { join } from 'node:path';
+import { join } from "node:path";
 import { EmbedBuilder } from "discord.js";
 import axios from "axios";
+import { getApiUrl } from "./globals.js";
+
+// Fetch model data from an endpoint
+export async function fetchData(endpoint) {
+  const response = await fetch(getApiUrl() + endpoint, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return await response.json();
+}
+
+// Update progress on current job
+export async function updateProgress(
+  interaction,
+  resolved,
+  progressMessage,
+  progressEmbed,
+  time = 0
+) {
+  // If a progress messaage isn't created yet and not resolved, create one.
+  if (!progressMessage && !resolved) {
+    progressEmbed = new EmbedBuilder()
+      .setTitle("Generation Progress")
+      .setDescription("calculating...");
+    progressMessage = await interaction.followUp({ embeds: [progressEmbed] });
+  }
+
+  try {
+    // Endpoint to retrieve progress on current job
+    let endpoint = "sdapi/v1/progress?skip_current_image=false";
+
+    // Get response
+    let progressData = await fetchData(endpoint);
+    const progress = progressData.progress;
+
+    // Format progress retrieved from response
+    let formattedProgress = Math.floor(progress * 100) + "%";
+
+    // Update description to reflect progress
+    progressEmbed.setDescription(formattedProgress);
+    await progressMessage.edit({ embeds: [progressEmbed] });
+
+    // If image not done
+    if (!resolved && progress !== 0) {
+      time++;
+      setTimeout(() => {
+        updateProgress(
+          interaction,
+          resolved,
+          progressMessage,
+          progressEmbed,
+          time
+        );
+      }, 1000);
+    } else {
+      // Image finished
+      // TODO: Figure out a way to delete the embed
+      progressEmbed.setTitle("Image Generated");
+      progressEmbed.setDescription(`Took ~${time}s`);
+      await progressMessage.edit({ embeds: [progressEmbed], ephemeral: true });
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 // Ensure a valid url. Use queryCheck=false when sanitizing image urls.
 // TODO: Proper error handling

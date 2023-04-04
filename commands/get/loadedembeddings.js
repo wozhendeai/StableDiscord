@@ -1,6 +1,6 @@
 // Get all the currently loaded models
 import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { getApiUrl } from "../../globals.js";
+import { fetchData } from "../../utils.js";
 
 const data = new SlashCommandBuilder()
   .setName("loadedembeddings")
@@ -17,16 +17,8 @@ async function execute(interaction) {
     let endpoint = "sdapi/v1/embeddings";
 
     // Send the payload to the API
-    let response = await fetch(getApiUrl() + endpoint, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    let data = await fetchData(endpoint);
 
-    // Extract the model names
-    let data = await response.json(); // Parse the response body
-    console.log(data);
     let fields = Object.entries(data.loaded).map(([modelName, modelInfo]) => ({
         name: modelName,
         value: `Step: ${modelInfo.step}, Shape: ${modelInfo.shape}, Vectors: ${modelInfo.vectors}`,

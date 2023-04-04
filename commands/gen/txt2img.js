@@ -6,9 +6,10 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  EmbedBuilder,
 } from "discord.js";
 import { getApiUrl, storeEmbedData } from "../../globals.js";
-import { createEmbedFromResponse } from "../../utils.js";
+import { createEmbedFromResponse, updateProgress } from "../../utils.js";
 
 const data = new SlashCommandBuilder()
   .setName("txt2img")
@@ -83,6 +84,7 @@ async function execute(interaction) {
     let height = interaction.options.getNumber("height") || 512;
     let width = interaction.options.getNumber("width") || 512;
     let seed = interaction.options.getNumber("seed") || -1;
+
     // Construct the payload to send to the API
     let payload = {
       prompt: prompt,
@@ -98,14 +100,28 @@ async function execute(interaction) {
     // Get endpoint
     let endpoint = "sdapi/v1/txt2img";
 
-    // Send the payload to the API
-    let response = await fetch(getApiUrl() + endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+    // Create a Promise that resolves when the fetch is complete
+    let fetchPromise = new Promise(async (resolve, reject) => {
+      try {
+        let response = await fetch(getApiUrl() + endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+        resolve(response);
+      } catch (error) {
+        reject(error);
+      }
     });
+
+    // Start updating progress
+    await updateProgress(interaction, false);
+
+    // Wait for the fetch to complete
+    let response = await fetchPromise;
+    // await progressMessage.delete();
 
     // Extract the generated image and info from the response
     let data = await response.json();
@@ -123,12 +139,9 @@ async function execute(interaction) {
         files.push(file);
       }
 
-      // Create fields to add into embed
-      const embed = createEmbedFromResponse(data, "txt2img");
-
       // Store embed incase used later
       const embedDataKey = `get_image_generation_data:${interaction.id}`; // Use interaction ID as a unique identifier
-      storeEmbedData(embedDataKey, embed);
+      storeEmbedData(embedDataKey, createEmbedFromResponse(data, "txt2img"));
 
       // Create the button and action row for the "get image generation data" button
       const getGenerationDataButton = new ButtonBuilder()
@@ -142,7 +155,6 @@ async function execute(interaction) {
 
       // Reply with the embed and the file attachment
       await interaction.editReply({
-        // embeds: [embed],
         files: files,
         components: [actionRow],
       });

@@ -86,6 +86,7 @@ const data = new SlashCommandBuilder()
   );
 
 // TODO: Check for valid api before trying to send api request
+// TODO: Add update progress
 async function execute(interaction) {
   try {
     // Wait before timeout
