@@ -8,12 +8,12 @@
 * Image info/data retrieval 
 
 # Planned Features
-* ControlNet
-* Possibly add image regeneration
-* Add image upscaler after generated
-* Load samplers, models dynamically into choices
-* (?) Add multiple web-ui API support
-* (?) Make a better way of returning image data, currently it truncates values of >1024 characters due to embed limits
+* ControlNet support
+* Add image upscaler for before & after generation
+* (?) Add image regeneration
+* (?) Load samplers, models dynamically into choices
+* (?) Add multiple webui API support
+* (?) Make a better way of returning image data, currently it truncates values of >1024 characters due to discord embed limits
 
 # Stable Diffusion WEBUI Discord Bot
 - Built ontop of AUTOMATIC-1111 Web-UI & its API
@@ -21,15 +21,16 @@
 # Installation/Setup
 1. Clone this repo
 2. npm install
-3. Create a .env file with the following parameters
-TOKEN="token-here"
-CLIENT_ID="clientid"
-GUILD_ID="guildid"
-STORE_IMAGE_DATA_MIN=5
-[If you don't know what to put here, click this](https://discordjs.guide/creating-your-bot/)
-3. npm start
+3. Create a .env file with the below parameters
+4. npm start
 
-Alternatively, invite this bot to your server. Not sure how to set this up myself yet. Probably wont, since I don't want to run this bot for you (unless you pay me).
+| Variable Name | Type | Information |
+| TOKEN | string | discord auth token |
+| CLIENT_ID | string |discord bot client id |
+| GUILD_ID | string | discord server guild id |
+| STORE_IMAGE_DATA_MIN | number (minutes) | how long you want to store image data in memory |
+
+[If you don't know what to put here, click this](https://discordjs.guide/creating-your-bot/)
 
 # Notes
 - Image generation data is removed from memory after a set amount of time. 

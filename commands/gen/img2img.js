@@ -7,12 +7,12 @@ import {
   ButtonBuilder,
   ButtonStyle,
 } from "discord.js";
-import { getApiUrl, storeEmbedData } from "../globals.js";
+import { getApiUrl, storeEmbedData } from "../../globals.js";
 import {
   createEmbedFromResponse,
   sanitizeUrl,
   getBase64EncodedImageData,
-} from "../utils.js";
+} from "../../utils.js";
 
 const data = new SlashCommandBuilder()
   .setName("img2img")
@@ -86,6 +86,7 @@ const data = new SlashCommandBuilder()
   );
 
 // TODO: Check for valid api before trying to send api request
+// TODO: Add update progress
 async function execute(interaction) {
   try {
     // Wait before timeout
