@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
 import * as dotenv from "dotenv";
 import { getEmbedData, deleteEmbedData } from "./globals.js";
-import { getFiles } from "./utils.js";
+import { getFiles, createEmbedFromResponse } from "./utils.js";
 
 // Configuration
 dotenv.config();
@@ -84,9 +84,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (action === "get_image_generation_data") {
       const embedData = getEmbedData(embedDataKey);
+      const embed = createEmbedFromResponse(embedData, "img2img"); // Figure out if img2img or txt2img
+      console.log(embedData)
       if (embedData) {
         await interaction.reply({
-          embeds: [embedData],
+          embeds: [embed],
           ephemeral: true,
         });
       } else {

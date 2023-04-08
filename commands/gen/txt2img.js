@@ -6,10 +6,9 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
 } from "discord.js";
 import { getApiUrl, storeEmbedData } from "../../globals.js";
-import { createEmbedFromResponse, updateProgress } from "../../utils.js";
+import { createEmbedFromResponse, fetchData, updateProgress } from "../../utils.js";
 
 const data = new SlashCommandBuilder()
   .setName("txt2img")
@@ -103,13 +102,7 @@ async function execute(interaction) {
     // Create a Promise that resolves when the fetch is complete
     let fetchPromise = new Promise(async (resolve, reject) => {
       try {
-        let response = await fetch(getApiUrl() + endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
+        let response = await fetchData(endpoint, payload);
         resolve(response);
       } catch (error) {
         reject(error);
@@ -119,12 +112,8 @@ async function execute(interaction) {
     // Start updating progress
     await updateProgress(interaction, false);
 
-    // Wait for the fetch to complete
-    let response = await fetchPromise;
-    // await progressMessage.delete();
-
     // Extract the generated image and info from the response
-    let data = await response.json();
+    let data = await fetchPromise;
     let imagesData = data.images;
 
     if (imagesData) {
