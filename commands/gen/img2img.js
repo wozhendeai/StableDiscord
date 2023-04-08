@@ -9,9 +9,10 @@ import {
 } from "discord.js";
 import { getApiUrl, storeEmbedData } from "../../globals.js";
 import {
-  createEmbedFromResponse,
   sanitizeUrl,
   getBase64EncodedImageData,
+  fetchData,
+  updateProgress
 } from "../../utils.js";
 
 const data = new SlashCommandBuilder()
@@ -108,13 +109,7 @@ async function execute(interaction) {
     let seed = interaction.options.getNumber("seed") || -1;
 
     // Convert image from url into base64 encoded data
-    let image;
-    try {
-      image = await getBase64EncodedImageData(url);
-    } catch (error) {
-      console.error("Failed to get base64");
-      return;
-    }
+    let image = await getBase64EncodedImageData(url);
 
     // Construct the payload to send to the API
     let payload = {
@@ -133,22 +128,27 @@ async function execute(interaction) {
     // Get endpoint
     let endpoint = "sdapi/v1/img2img";
 
-    // Send the payload to the API
-    let response = await fetch(getApiUrl() + endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+    // Create a Promise that resolves when the fetch is complete
+    let fetchPromise = new Promise(async (resolve, reject) => {
+      try {
+        let response = await fetchData(endpoint, payload);
+        resolve(response);
+      } catch (error) {
+        reject(error);
+      }
     });
 
+    // Start updating progress
+    await updateProgress(interaction, false);
+
     // Extract the generated image and info from the response
-    let data = await response.json();
+    let data = await fetchPromise;
     let imagesData = data.images;
 
     if (imagesData) {
       const files = [];
 
+      // Handle images
       for (const imageData of imagesData) {
         // Convert the base64 string to a buffer
         const buffer = Buffer.from(imageData, "base64");
@@ -158,12 +158,9 @@ async function execute(interaction) {
         files.push(file);
       }
 
-      // Create fields to add into embed
-      const embed = createEmbedFromResponse(data, "img2img");
-
-      // Store embed incase requested later
+      // Store dataCreate fields to add into embed incase requested later
       const embedDataKey = `get_image_generation_data:${interaction.id}`; // Use interaction ID as a unique identifier
-      storeEmbedData(embedDataKey, embed);
+      storeEmbedData(embedDataKey, data);
 
       // Create the button and action row for the "get image generation data" button
       const getGenerationDataButton = new ButtonBuilder()

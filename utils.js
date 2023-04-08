@@ -1,3 +1,5 @@
+// TODO: Cleanup this file, maybe separate functions further
+
 import { readdirSync } from "fs";
 import { join } from "node:path";
 import { EmbedBuilder } from "discord.js";
@@ -5,8 +7,21 @@ import axios from "axios";
 import { getApiUrl } from "./globals.js";
 
 // Fetch model data from an endpoint
-export async function fetchData(endpoint) {
-  const response = await fetch(getApiUrl() + endpoint, {
+export async function fetchData(endpoint, payload=null) {
+  let response;
+
+  if(payload) {
+    response = await fetch(getApiUrl() + endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    return await response.json();
+  }
+
+  response = await fetch(getApiUrl() + endpoint, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -48,7 +63,9 @@ export async function updateProgress(
     await progressMessage.edit({ embeds: [progressEmbed] });
 
     // If image not done
-    if (!resolved && progress !== 0) {
+    // TODO: Fix this image check.. Maybe setTimeout? 
+    if (!resolved && progress !== 0 || time == 0) {
+      console.log('test')
       time++;
       setTimeout(() => {
         updateProgress(

@@ -1,6 +1,6 @@
 import { sanitizeUrl } from "./utils.js";
 
-let apiUrl = "https://stands-gif-regularly-sewing.trycloudflare.com/";
+let apiUrl = "https://pix-movie-distribute-cologne.trycloudflare.com/";
 let embedsData = new Map();
 
 export function storeEmbedData(key, data) {
